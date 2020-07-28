@@ -81,18 +81,11 @@ public class Server extends Thread {
 		// store result of the validation. Default : false
 		boolean resultValidation = false;
 
-		// TODO Perform validation of the given signature with
-		// the given key of the client. Store/Return the result in 'resultValidation'
-		try {
-			PublicKeyVerify verifier = PublicKeyVerifyFactory.getPrimitive(key);
-			verifier.verify(signature, order);
-
-		} catch (GeneralSecurityException e) {
-			e.printStackTrace();
-			return false;
-		}
-
-		return true;
+		// TODO Perform validation of the given "signature" with
+		// the already defined "key" of the client. 
+		//Store/Return the result in 'resultValidation' that shows if the validation was (not) successful.
+		
+		return resultValidation;
 
 	}
 
@@ -106,20 +99,14 @@ public class Server extends Thread {
 	 */
 	private boolean saveOrderEncrypted(byte[] order, int clientId) {
 
-		byte[] encryptedOrder;
+		byte[] encryptedOrder = null;
 		KeysetHandle key = masterKey;
 
-		// TODO Perform a symmetric encryption of the given order with the already
+		// TODO Perform a symmetric encryption of the given "order" with the already
 		// defined "key". Store the chiphertext in the already defined variable
 		// "encryptedOrder"
 
-		try {
-			Aead aeadEncryption = AeadFactory.getPrimitive(masterKey);
-			encryptedOrder = aeadEncryption.encrypt(order, null);
-		} catch (GeneralSecurityException e) {
-			e.printStackTrace();
-			return false;
-		}
+		
 
 		// Add encrypted order in queue of client
 		return queues.get(clientId).add(encryptedOrder);
@@ -138,21 +125,11 @@ public class Server extends Thread {
 		KeysetHandle key = masterKey;
 		String decryptedOrder = null;
 
-		// TODO Perform a symmetric decryption of the given encryptedOrder with the
-		// already
-		// defined "key". Store/Return the plaintext in the already defined String
-		// variable
-		// "decryptedOrder"
-		try {
-			Aead aeadDecryption = AeadFactory.getPrimitive(key);
-
-			byte[] decryptedCipherTextBytes = aeadDecryption.decrypt(encryptedOrder, null);
-			decryptedOrder = new String(decryptedCipherTextBytes, StandardCharsets.UTF_8);
-			return decryptedOrder;
-		} catch (GeneralSecurityException e) {
-			e.printStackTrace();
-			return null;
-		}
+		// TODO Perform a symmetric decryption of the given "encryptedOrder" with the
+		// already defined "key". Store/Return the plaintext in the already defined String
+		// variable "decryptedOrder"
+		
+		return null;
 
 	}
 
@@ -193,8 +170,6 @@ public class Server extends Thread {
 				String decrypted = "";
 				decrypted = decryptOrder(encryptedOrder);
 				answer = answer + Message.createServerSendOrdersMessage(decrypted) + "\n";
-				// TODO change to correct Message wrap (right now its only concatenated
-				// messages)
 			}
 			return answer;
 		case BuyStock:

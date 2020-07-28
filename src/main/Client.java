@@ -63,17 +63,9 @@ public class Client implements Runnable {
 	 */
 	private static byte[] signMessage(String order, KeysetHandle keySet) {
 
-		// TODO: Perform signing of the parameter order with the given keySet
+		// TODO: Perform signing of the parameter "order" with the given "keySet"
 
-		try {
-			PublicKeySign signer = PublicKeySignFactory.getPrimitive(keySet);
-
-			byte[] signatureBytes = signer.sign(order.getBytes());
-			return signatureBytes;
-		} catch (GeneralSecurityException e) {
-			e.printStackTrace();
-			return null;
-		}
+		return null;
 	}
 
 	/**
