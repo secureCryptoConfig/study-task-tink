@@ -3,13 +3,14 @@ package main;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.Random;
-
+import java.util.Base64;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.crypto.tink.KeysetHandle;
 import com.google.crypto.tink.PublicKeySign;
-import com.google.crypto.tink.signature.PublicKeySignFactory;
+import com.google.crypto.tink.signature.PublicKeySignWrapper;
 import com.google.crypto.tink.signature.SignatureKeyTemplates;
+
+import main.Message.MessageType;
 
 /**
  * Class that simulates the behavior of a Client that interacts with a
@@ -56,16 +57,16 @@ public class Client implements Runnable {
 	 * Methods that signs the client order with the corresponding key
 	 * 
 	 * @param order
-	 * @param publicKey
-	 * @param privateKey
-	 * @return byte[] : signature
+	 * @param keySet
+	 * @return String : signature
 	 * @throws CoseException
 	 */
 	private static byte[] signMessage(String order, KeysetHandle keySet) {
 
-		// TODO: Perform signing of the parameter "order" with the given "keySet"
+		// TODO: Perform signing of the parameter order with the given keySet
 
-		return null;
+		return new byte[0];
+
 	}
 
 	/**
@@ -110,16 +111,19 @@ public class Client implements Runnable {
 	 * @throws NumberFormatException
 	 * @throws JsonProcessingException
 	 */
-	private static String generateRandomMessage() throws NumberFormatException, JsonProcessingException {
-		int random = new Random().nextInt(3);
-		if (random == 0) {
+	private static String generateRandomMessage(MessageType type)
+			throws NumberFormatException, JsonProcessingException {
+
+		switch (type) {
+		case BuyStock:
 			return Message.createBuyStockMessage(generateRandomString(12), generateRandomNumber(3));
-		} else if (random == 1) {
+		case SellStock:
 			return Message.createSellStockMessage(generateRandomString(12), generateRandomNumber(10));
-		} else {
+		case GetOrders:
+			return Message.createGetOrdersMessage();
+		default:
 			return Message.createGetOrdersMessage();
 		}
-
 	}
 
 	/**
@@ -129,10 +133,14 @@ public class Client implements Runnable {
 	 * @throws CoseException
 	 * @throws JsonProcessingException
 	 */
-	private void sendMessage(String order) throws JsonProcessingException {
+	private void sendMessage(String message) throws JsonProcessingException {
 
-		String signedMessage = SignedMessage.createSignedMessage(this.clientID, order,
-				signMessage(order, this.key));
+		p("creating signature for message: " + message);
+		byte[] signature = signMessage(message, this.key);
+		p("signature is (base64 encoded): "
+				+ (signature.length > 0 ? Base64.getEncoder().encodeToString(signature) : "null"));
+
+		String signedMessage = SignedMessage.createSignedMessage(this.clientID, message, signature);
 
 		p("sending to server: " + signedMessage);
 		String result = server.acceptMessage(signedMessage);
@@ -192,18 +200,20 @@ public class Client implements Runnable {
 
 	@Override
 	public void run() {
-		while (true) {
-			try {
-				Thread.sleep((long) (Math.random() * sendFrequency + 1));
-				sendMessage(generateRandomMessage());
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
+		// while (true) {
+		try {
+			Thread.sleep((long) (Math.random() * sendFrequency + 1));
+			sendMessage(generateRandomMessage(MessageType.BuyStock));
+			sendMessage(generateRandomMessage(MessageType.SellStock));
+			sendMessage(generateRandomMessage(MessageType.GetOrders));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
 		}
+		// }
 
 	}
 }

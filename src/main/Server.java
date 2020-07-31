@@ -1,9 +1,9 @@
 package main;
 
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,11 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.crypto.tink.Aead;
 import com.google.crypto.tink.KeysetHandle;
 import com.google.crypto.tink.PublicKeyVerify;
-import com.google.crypto.tink.aead.AeadFactory;
+import com.google.crypto.tink.aead.AeadConfig;
 import com.google.crypto.tink.aead.AeadKeyTemplates;
+import com.google.crypto.tink.aead.AeadWrapper;
 import com.google.crypto.tink.config.TinkConfig;
-import com.google.crypto.tink.signature.PublicKeyVerifyFactory;
-
+import com.google.crypto.tink.signature.PublicKeySignWrapper;
 import main.Message.MessageType;
 
 /**
@@ -81,9 +81,9 @@ public class Server extends Thread {
 		// store result of the validation. Default : false
 		boolean resultValidation = false;
 
-		// TODO Perform validation of the given "signature" with
-		// the already defined "key" of the client. 
-		//Store/Return the result in 'resultValidation' that shows if the validation was (not) successful.
+		// TODO Perform validation of the given signature with
+		// the given key of the client. Store/Return the result in 'resultValidation'
+		
 		
 		return resultValidation;
 
@@ -102,15 +102,20 @@ public class Server extends Thread {
 		byte[] encryptedOrder = null;
 		KeysetHandle key = masterKey;
 
-		// TODO Perform a symmetric encryption of the given "order" with the already
+		// TODO Perform a symmetric encryption of the given order with the already
 		// defined "key". Store the ciphertext in the already defined variable
 		// "encryptedOrder"
 
 		
-
-		// Add encrypted order in queue of client
-		return queues.get(clientId).add(encryptedOrder);
-
+		
+		p("encryptedOrder is (base64 encoded): " + (encryptedOrder != null ? Base64.getEncoder().encodeToString(encryptedOrder) : "null"));
+        // Add encrypted order in queue of client
+        if(encryptedOrder == null) {
+            return false;
+        } else {
+            return queues.get(clientId).add(encryptedOrder);
+        }
+        
 	}
 
 	/**
@@ -125,11 +130,15 @@ public class Server extends Thread {
 		KeysetHandle key = masterKey;
 		String decryptedOrder = null;
 
-		// TODO Perform a symmetric decryption of the given "encryptedOrder" with the
-		// already defined "key". Store/Return the plaintext in the already defined String
-		// variable "decryptedOrder"
+		// TODO Perform a symmetric decryption of the given encryptedOrder with the
+		// already
+		// defined "key". Store/Return the plaintext in the already defined String
+		// variable
+		// "decryptedOrder"
+	
 		
-		return null;
+        return decryptedOrder;
+        
 
 	}
 
@@ -165,7 +174,11 @@ public class Server extends Thread {
 		case GetOrders:
 			CircularFifoQueue<byte[]> q = queues.get(clientId);
 			String answer = "";
-			for (int i = 0; i < q.size(); i++) {
+            
+            if (q.size() == 0) {
+                return "no orders in queue";
+            }
+            for (int i = 0; i < q.size(); i++) {
 				byte[] encryptedOrder = q.get(i);
 				String decrypted = "";
 				decrypted = decryptOrder(encryptedOrder);
@@ -174,11 +187,11 @@ public class Server extends Thread {
 			return answer;
 		case BuyStock:
 		case SellStock:
-			boolean encryptionResult = saveOrderEncrypted(signedMessage.getContent().getBytes(), clientId);
-			if (encryptionResult == true) {
+            boolean encryptionResult = saveOrderEncrypted(signedMessage.getContent().getBytes(), clientId);
+            if (encryptionResult) {
 				return Message.createServerResponseMessage(isCorrectMessage);
 			} else {
-				return new String("{\"Failure during encryption\"}");
+				return "{\"Failure during encryption\"}";
 			}
 		default:
 			return new String("{\"Failure\"}");
@@ -206,13 +219,14 @@ public class Server extends Thread {
 			byte[] signature = signedMessage.getSignature();
 
 			isCorrectMessage = checkSignature(clientId, signedMessage.getContent().getBytes(), signature);
-
+            p("message signature is " + (isCorrectMessage ? "valid" : "not valid"));
 			if (isCorrectMessage == true) {
+                
 				Message theMessage = mapper.readValue(signedMessage.getContent(), Message.class);
 				type = theMessage.getMessageType();
 
 				p(theMessage.getMessageType().toString());
-
+				
 				return parseMessage(type, clientId, isCorrectMessage, signedMessage);
 
 			} else {
@@ -236,14 +250,15 @@ public class Server extends Thread {
 
 	@Override
 	public void run() {
-		while (true) {
-			p("processing orders");
+		//while (true) {
+            p("Server started");
+            //p("processing orders");
 			try {
 				Thread.sleep((long) (Math.random() * sendFrequency + 1));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		}
+		//}
 	}
 
 }
