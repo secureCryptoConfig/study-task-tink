@@ -63,7 +63,8 @@ public class Client implements Runnable {
 	 */
 	private static byte[] signMessage(String order, KeysetHandle keySet) {
 
-		// TODO: Perform signing of the parameter order with the given keySet
+		// TODO: Perform signing of the parameter "order" with the given "keySet"
+		// Catch possible occurring exceptions
 
 		return new byte[0];
 
@@ -73,11 +74,11 @@ public class Client implements Runnable {
 	 * Clients are registered with their public key by the server.
 	 * 
 	 * The server needs the client public key for validation of signed messages.
-	 * First a SCCKey for the client is generated which will then be send to the
+	 * First a key for the client is generated which will then be send to the
 	 * server. The server gives back a clientId and a new client will be generated.
 	 * 
 	 * @param server
-	 * @return
+	 * @return Client: new generated client
 	 * @throws NoSuchAlgorithmException
 	 * @throws CoseException
 	 * @throws IllegalStateException
@@ -104,10 +105,11 @@ public class Client implements Runnable {
 	}
 
 	/**
-	 * Automatically generates a order of a random type (buy or sell stock). Order
-	 * contains an amount of stock to buy/sell from a specific stock
+	 * Automatically generates a order of a specific type (BuyStock, SellStock, GetOrders). 
+	 * Orders for buying/selling are containing an amount of stock to buy/sell from a specific stock
 	 * 
-	 * @return
+	 * @return String: message
+	 * @param type
 	 * @throws NumberFormatException
 	 * @throws JsonProcessingException
 	 */
@@ -130,7 +132,7 @@ public class Client implements Runnable {
 	 * Sending of signed message for buying/selling stock to server. Server sends a
 	 * response. Message is accepted if signature can be validated.
 	 * 
-	 * @throws CoseException
+	 * @param message
 	 * @throws JsonProcessingException
 	 */
 	private void sendMessage(String message) throws JsonProcessingException {

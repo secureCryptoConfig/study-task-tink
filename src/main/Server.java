@@ -81,8 +81,11 @@ public class Server extends Thread {
 		// store result of the validation. Default : false
 		boolean resultValidation = false;
 
-		// TODO Perform validation of the given signature with
-		// the given key of the client. Store/Return the result in 'resultValidation'
+		// TODO Perform validation of the given "signature" with
+		// the corresponding public key "key"  of the client. Store the result in
+		// "resultValidation"
+		
+		// Catch possible occurring exceptions
 		
 		
 		return resultValidation;
@@ -102,9 +105,11 @@ public class Server extends Thread {
 		byte[] encryptedOrder = null;
 		KeysetHandle key = masterKey;
 
-		// TODO Perform a symmetric encryption of the given order with the already
+		// TODO Perform a symmetric encryption of the given "order" with the already
 		// defined "key". Store the ciphertext in the already defined variable
-		// "encryptedOrder"
+		// "encryptedOrder".
+		
+		// Catch possible occurring exceptions
 
 		
 		
@@ -123,18 +128,18 @@ public class Server extends Thread {
 	 * send orders
 	 * 
 	 * @param encryptedOrder encrypted order
-	 * @return String : plaintext of decryptet order
+	 * @return String : plaintext of decrypted order
 	 * @throws CoseException
 	 */
 	private String decryptOrder(byte[] encryptedOrder) {
 		KeysetHandle key = masterKey;
 		String decryptedOrder = null;
 
-		// TODO Perform a symmetric decryption of the given encryptedOrder with the
-		// already
-		// defined "key". Store/Return the plaintext in the already defined String
-		// variable
-		// "decryptedOrder"
+		// TODO Perform a symmetric decryption of the given "encryptedOrder" with the
+		// already defined "key". Store the plaintext in the already defined String
+		// variable "decryptedOrder"
+		
+		// Catch possible occurring exceptions
 	
 		
         return decryptedOrder;
@@ -160,12 +165,11 @@ public class Server extends Thread {
 	/**
 	 * Message get processed depending on its MessageType and validation result.
 	 * 
-	 * @param type             BUY/SELL stock or GETORDERS
+	 * @param type: BUY/SELL stock or GETORDERS
 	 * @param clientId
-	 * @param isCorrectMessage shows if message signature was correct
-	 * @param signedMessage    message sent from the client to server
-	 * @return
-	 * @throws CoseException
+	 * @param isCorrectMessage: shows if message signature was correct
+	 * @param signedMessage: message sent from the client to server
+	 * @return String
 	 * @throws JsonProcessingException
 	 */
 	private String parseMessage(MessageType type, int clientId, boolean isCorrectMessage, SignedMessage signedMessage)
@@ -203,8 +207,8 @@ public class Server extends Thread {
 	 * process gets started. Server sends back a response to client showing if
 	 * incoming order signature could be validated
 	 * 
-	 * @param message incoming from interaction of client with server
-	 * @return
+	 * @param message: incoming from interaction of client with server
+	 * @return String
 	 */
 	public String acceptMessage(String message) {
 
@@ -250,15 +254,15 @@ public class Server extends Thread {
 
 	@Override
 	public void run() {
-		//while (true) {
+
             p("Server started");
-            //p("processing orders");
+            
 			try {
 				Thread.sleep((long) (Math.random() * sendFrequency + 1));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		//}
+		
 	}
 
 }
